@@ -58,6 +58,7 @@ const chainIds = {
   ropsten: 3,
   ArbitrumOne: 42161,
   BaseMainnet: 8453,
+  holesky: 17000,
 };
 
 const config: HardhatUserConfig = {
@@ -68,6 +69,7 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
+      gas: "auto",
       accounts: {
         mnemonic,
       },
@@ -91,6 +93,15 @@ const config: HardhatUserConfig = {
       },
       chainId: chainIds["mainnet"],
       url: "https://mainnet.infura.io/v3/" + infuraApiKey + "",
+    },
+    holesky: {
+      accounts: {
+        count: 10,
+        mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: chainIds["holesky"],
+      url: "https://holesky.infura.io/v3/" + infuraApiKey + "",
     },
     rinkeby: {
       accounts: {
@@ -172,6 +183,7 @@ const config: HardhatUserConfig = {
             enabled: true,
             runs: 200,
           },
+          viaIR: true,
         },
       },
     ],
@@ -198,7 +210,7 @@ const config: HardhatUserConfig = {
       "PriceOracleL2",
       "FeeModule",
       "DepositBatch",
-      "WithdrawBatch"
+      "WithdrawBatch",
     ],
     spacing: 2,
   },
