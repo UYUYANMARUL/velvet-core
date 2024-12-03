@@ -125,6 +125,7 @@ coverage*
 lib/forge-std/
 
 forge-cache
+venn.config.json
 
 out
 .vs
