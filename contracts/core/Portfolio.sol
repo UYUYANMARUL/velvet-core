@@ -17,79 +17,117 @@ import {IProtocolConfig} from "../config/protocol/IProtocolConfig.sol";
 import {IFeeModule} from "../fee/IFeeModule.sol";
 import {VaultManager, Dependencies} from "./management/VaultManager.sol";
 import {FunctionParameters} from "../FunctionParameters.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts-upgradeable-4.9.6/utils/ContextUpgradeable.sol";
 
-contract Portfolio is VennFirewallConsumer, OwnableUpgradeable, UUPSUpgradeable, VaultManager {
-  // Configuration contracts for asset management, protocol parameters, and fee calculations.
-  IAssetManagementConfig private _assetManagementConfig;
-  IProtocolConfig private _protocolConfig;
-  IFeeModule private _feeModule;
+contract Portfolio is
+    VennFirewallConsumer,
+    OwnableUpgradeable,
+    UUPSUpgradeable,
+    VaultManager
+{
+    // Configuration contracts for asset management, protocol parameters, and fee calculations.
+    IAssetManagementConfig private _assetManagementConfig;
+    IProtocolConfig private _protocolConfig;
+    IFeeModule private _feeModule;
 
-  // Prevents the constructor from being called on the implementation contract, ensuring only proxy initialization is valid.
-  constructor() {
-    _disableInitializers();
-  }
+    // Prevents the constructor from being called on the implementation contract, ensuring only proxy initialization is valid.
+    constructor() {
+        _disableInitializers();
+    }
 
-  /**
-   * @notice Initializes the portfolio contract with necessary configurations.
-   * @param initData Struct containing all necessary initialization parameters including asset management, protocol config, and fee module addresses.
-   */
-  function init(
-    FunctionParameters.PortfolioInitData calldata initData
-  ) external initializer firewallProtected {
-    __Ownable_init();
-    __UUPSUpgradeable_init();
+    /**
+     * @notice Initializes the portfolio contract with necessary configurations.
+     * @param initData Struct containing all necessary initialization parameters including asset management, protocol config, and fee module addresses.
+     */
+    function init(
+        FunctionParameters.PortfolioInitData calldata initData
+    ) external initializer firewallProtected {
+        __Ownable_init();
+        __UUPSUpgradeable_init();
 
-    // Initializes configurations for vault management, token settings, access controls, and user management.
-    __VaultConfig_init(initData._vault, initData._module);
-    __PortfolioToken_init(initData._name, initData._symbol);
-    __VaultManager_init();
-    __AccessModifiers_init(initData._accessController);
-    __UserManagement_init(initData._tokenExclusionManager);
+        // Initializes configurations for vault management, token settings, access controls, and user management.
+        __VaultConfig_init(initData._vault, initData._module);
+        __PortfolioToken_init(initData._name, initData._symbol);
+        __VaultManager_init();
+        __AccessModifiers_init(initData._accessController);
+        __UserManagement_init(initData._tokenExclusionManager);
 
-    // Sets up the contracts for managing assets, protocol parameters, and fee calculations.
-    _assetManagementConfig = IAssetManagementConfig(
-      initData._assetManagementConfig
-    );
-    _protocolConfig = IProtocolConfig(initData._protocolConfig);
-    _feeModule = IFeeModule(initData._feeModule);
-  
-		_setAddressBySlot(bytes32(uint256(keccak256("eip1967.firewall")) - 1), address(0));
-		_setAddressBySlot(bytes32(uint256(keccak256("eip1967.firewall.admin")) - 1), msg.sender);
-	}
+        // Sets up the contracts for managing assets, protocol parameters, and fee calculations.
+        _assetManagementConfig = IAssetManagementConfig(
+            initData._assetManagementConfig
+        );
+        _protocolConfig = IProtocolConfig(initData._protocolConfig);
+        _feeModule = IFeeModule(initData._feeModule);
 
-  // Provides a way to retrieve the asset management configuration.
-  function assetManagementConfig()
-    public
-    view
-    override(Dependencies)
-    returns (IAssetManagementConfig)
-  {
-    return _assetManagementConfig;
-  }
+        _setAddressBySlot(
+            bytes32(uint256(keccak256("eip1967.firewall")) - 1),
+            address(0)
+        );
+        _setAddressBySlot(
+            bytes32(uint256(keccak256("eip1967.firewall.admin")) - 1),
+            msg.sender
+        );
+    }
 
-  // Provides a way to retrieve the protocol configuration.
-  function protocolConfig()
-    public
-    view
-    override(Dependencies)
-    returns (IProtocolConfig)
-  {
-    return _protocolConfig;
-  }
+    // Provides a way to retrieve the asset management configuration.
+    function assetManagementConfig()
+        public
+        view
+        override(Dependencies)
+        returns (IAssetManagementConfig)
+    {
+        return _assetManagementConfig;
+    }
 
-  // Provides a way to retrieve the fee module.
-  function feeModule() public view override(Dependencies) returns (IFeeModule) {
-    return _feeModule;
-  }
+    // Provides a way to retrieve the protocol configuration.
+    function protocolConfig()
+        public
+        view
+        override(Dependencies)
+        returns (IProtocolConfig)
+    {
+        return _protocolConfig;
+    }
 
-  /**
-   * @notice Authorizes the smart contract upgrade to a new implementation.
-   * @dev Ensures that only the contract owner can perform the upgrade.
-   * @param newImplementation The address of the new contract implementation.
-   */
-  function _authorizeUpgrade(
-    address newImplementation
-  ) internal override onlyOwner {
-    // Intentionally left empty as required by an abstract contract
-  }
+    // Provides a way to retrieve the fee module.
+    function feeModule()
+        public
+        view
+        override(Dependencies)
+        returns (IFeeModule)
+    {
+        return _feeModule;
+    }
+
+    /**
+     * @notice Authorizes the smart contract upgrade to a new implementation.
+     * @dev Ensures that only the contract owner can perform the upgrade.
+     * @param newImplementation The address of the new contract implementation.
+     */
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {
+        // Intentionally left empty as required by an abstract contract
+    }
+
+    function _msgData()
+        internal
+        view
+        virtual
+        override(Context, ContextUpgradeable, VaultManager)
+        returns (bytes calldata)
+    {
+        return super._msgData();
+    }
+
+    function _msgSender()
+        internal
+        view
+        virtual
+        override(Context, ContextUpgradeable, VaultManager)
+        returns (address)
+    {
+        return super._msgSender();
+    }
 }

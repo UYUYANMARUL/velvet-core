@@ -13,67 +13,95 @@ import {ProtocolFeeManagement} from "./ProtocolFeeManagement.sol";
 import {SolverManagement} from "./SolverManagement.sol";
 
 import {RewardTargetManagement} from "./RewardTargetManagement.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts-upgradeable-4.9.6/utils/ContextUpgradeable.sol";
 
 /**
  * @title MainContract
  * @dev Main contract integrating all management functionalities with access control.
  */
 contract ProtocolConfig is
-  VennFirewallConsumer,
-  Ownable2StepUpgradeable,
-  UUPSUpgradeable,
-  OracleManagement,
-  ProtocolTreasuryManagement,
-  SystemSettings,
-  TokenManagement,
-  ProtocolFeeManagement,
-  SolverManagement,
-  RewardTargetManagement
+    VennFirewallConsumer,
+    Ownable2StepUpgradeable,
+    UUPSUpgradeable,
+    OracleManagement,
+    ProtocolTreasuryManagement,
+    SystemSettings,
+    TokenManagement,
+    ProtocolFeeManagement,
+    SolverManagement,
+    RewardTargetManagement
 {
-  /// @custom:oz-upgrades-unsafe-allow constructor
-  constructor() {
-    _disableInitializers();
-  }
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
 
-  // Implement the OwnableUpgradeable initialization.
-  function initialize(
-    address _velvetTreasury,
-    address _oracle
-  ) external initializer firewallProtected {
-    __Ownable2Step_init();
-    __UUPSUpgradeable_init();
-    __OracleManagement_init(_oracle);
-    __TreasuryManagement_init(_velvetTreasury);
-    __SystemSettings_init();
-    __TokenManagement_init(_oracle);
-    __FeeManagement_init();
-  
-		_setAddressBySlot(bytes32(uint256(keccak256("eip1967.firewall")) - 1), address(0));
-		_setAddressBySlot(bytes32(uint256(keccak256("eip1967.firewall.admin")) - 1), msg.sender);
-	}
+    // Implement the OwnableUpgradeable initialization.
+    function initialize(
+        address _velvetTreasury,
+        address _oracle
+    ) external initializer firewallProtected {
+        __Ownable2Step_init();
+        __UUPSUpgradeable_init();
+        __OracleManagement_init(_oracle);
+        __TreasuryManagement_init(_velvetTreasury);
+        __SystemSettings_init();
+        __TokenManagement_init(_oracle);
+        __FeeManagement_init();
 
-  function _owner() internal view override(OwnableCheck) returns (address) {
-    return owner();
-  }
+        _setAddressBySlot(
+            bytes32(uint256(keccak256("eip1967.firewall")) - 1),
+            address(0)
+        );
+        _setAddressBySlot(
+            bytes32(uint256(keccak256("eip1967.firewall.admin")) - 1),
+            msg.sender
+        );
+    }
 
-  // Override the onlyOwner modifier to specify it overrides from OwnableUpgradeable.
-  function _isOwner()
-    internal
-    view
-    override(OwnableCheck)
-    onlyOwner
-    returns (bool)
-  {
-    return true;
-  }
+    function _owner() internal view override(OwnableCheck) returns (address) {
+        return owner();
+    }
 
-  /**
-   * @notice Authorizes upgrade for this contract
-   * @param newImplementation Address of the new implementation
-   */
-  function _authorizeUpgrade(
-    address newImplementation
-  ) internal override onlyOwner {
-    // Intentionally left empty as required by an abstract contract
-  }
+    // Override the onlyOwner modifier to specify it overrides from OwnableUpgradeable.
+    function _isOwner()
+        internal
+        view
+        override(OwnableCheck)
+        onlyOwner
+        returns (bool)
+    {
+        return true;
+    }
+
+    /**
+     * @notice Authorizes upgrade for this contract
+     * @param newImplementation Address of the new implementation
+     */
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {
+        // Intentionally left empty as required by an abstract contract
+    }
+
+    function _msgData()
+        internal
+        view
+        virtual
+        override(Context, ContextUpgradeable)
+        returns (bytes calldata)
+    {
+        return super._msgData();
+    }
+
+    function _msgSender()
+        internal
+        view
+        virtual
+        override(Context, ContextUpgradeable)
+        returns (address)
+    {
+        return super._msgSender();
+    }
 }

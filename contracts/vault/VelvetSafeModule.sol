@@ -13,39 +13,66 @@ pragma solidity 0.8.17;
 import {VennFirewallConsumer} from "@ironblocks/firewall-consumer/contracts/consumers/VennFirewallConsumer.sol";
 import {Module, Enum} from "@gnosis.pm/zodiac/contracts/core/Module.sol";
 import {ErrorLibrary} from "../library/ErrorLibrary.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
 contract VelvetSafeModule is VennFirewallConsumer, Module {
-  address public multiSendLibrary;
+    address public multiSendLibrary;
 
-  /**
-   * @notice This function transfers module ownership
-   * @param initializeParams Encoded data having the init parameters
-   */
-  function setUp(bytes memory initializeParams) public override initializer {
-    __Ownable_init();
-    (address _safeAddress, address _portfolio, address _multiSendLib) = abi
-      .decode(initializeParams, (address, address, address));
-    multiSendLibrary = _multiSendLib;
-    setAvatar(_safeAddress);
-    setTarget(_safeAddress);
-    transferOwnership(_portfolio);
-  }
+    /**
+     * @notice This function transfers module ownership
+     * @param initializeParams Encoded data having the init parameters
+     */
+    function setUp(bytes memory initializeParams) public override initializer {
+        __Ownable_init();
+        (address _safeAddress, address _portfolio, address _multiSendLib) = abi
+            .decode(initializeParams, (address, address, address));
+        multiSendLibrary = _multiSendLib;
+        setAvatar(_safeAddress);
+        setTarget(_safeAddress);
+        transferOwnership(_portfolio);
+    }
 
-  /**
-   * @notice This function executes to get non derivative tokens back to vault
-   * @param handlerAddresses Address of the handler to be used
-   * @param encodedCalls Encoded calldata for the `executeWallet` function
-   */
-  function executeWallet(
-    address handlerAddresses,
-    bytes calldata encodedCalls
-  ) external onlyOwner firewallProtected returns (bool isSuccess, bytes memory data) {
-    (isSuccess, data) = execAndReturnData(
-      handlerAddresses,
-      0,
-      encodedCalls,
-      Enum.Operation.Call
-    );
-    if (!isSuccess) revert ErrorLibrary.CallFailed();
-  }
+    /**
+     * @notice This function executes to get non derivative tokens back to vault
+     * @param handlerAddresses Address of the handler to be used
+     * @param encodedCalls Encoded calldata for the `executeWallet` function
+     */
+    function executeWallet(
+        address handlerAddresses,
+        bytes calldata encodedCalls
+    )
+        external
+        onlyOwner
+        firewallProtected
+        returns (bool isSuccess, bytes memory data)
+    {
+        (isSuccess, data) = execAndReturnData(
+            handlerAddresses,
+            0,
+            encodedCalls,
+            Enum.Operation.Call
+        );
+        if (!isSuccess) revert ErrorLibrary.CallFailed();
+    }
+
+    function _msgData()
+        internal
+        view
+        virtual
+        override(Context, ContextUpgradeable)
+        returns (bytes calldata)
+    {
+        return super._msgData();
+    }
+
+    function _msgSender()
+        internal
+        view
+        virtual
+        override(Context, ContextUpgradeable)
+        returns (address)
+    {
+        return super._msgSender();
+    }
 }

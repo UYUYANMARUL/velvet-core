@@ -12,6 +12,6 @@ import {Portfolio} from "../../core/Portfolio.sol";
  *      This approach allows for the introduction of new features without disrupting existing storage layout, ensuring a seamless upgrade process.
  */
 contract PortfolioV3_3 is Portfolio {
-  uint256 _addedVariable;
-  address _newAddedAddress;
+    uint256 _addedVariable;
+    address _newAddedAddress;
 }

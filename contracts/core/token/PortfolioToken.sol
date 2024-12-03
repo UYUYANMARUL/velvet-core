@@ -7,6 +7,9 @@ import {AccessModifiers} from "../access/AccessModifiers.sol";
 import {CooldownManager, ErrorLibrary} from "../cooldown/CooldownManager.sol";
 import {Dependencies} from "../config/Dependencies.sol";
 import {UserManagement} from "../user/UserManagement.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts-upgradeable-4.9.6/utils/ContextUpgradeable.sol";
+
 
 /**
  * @title PortfolioToken
@@ -153,4 +156,24 @@ abstract contract PortfolioToken is
       _updateUserRecord(_to, balanceOf(_to));
     }
   }
+
+    function _msgData()
+        internal
+        view
+        virtual
+        override(Context, ContextUpgradeable)
+        returns (bytes calldata)
+    {
+        return super._msgData();
+    }
+
+    function _msgSender()
+        internal
+        view
+        virtual
+        override(Context, ContextUpgradeable)
+        returns (address)
+    {
+        return super._msgSender();
+    }
 }
